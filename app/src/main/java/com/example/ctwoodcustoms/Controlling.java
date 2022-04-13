@@ -6,21 +6,16 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.os.AsyncTask;
-//import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ImageButton;
-import android.widget.ListView;
 import android.widget.Toast;
-
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Set;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 public class Controlling extends Activity {
     private static final String TAG = "BlueTest5-Controlling";
@@ -35,10 +30,36 @@ public class Controlling extends Activity {
     final static String on="92";//on
     final static String off="79";//off
 
-
     private ProgressDialog progressDialog;
-    Button btnOn,btnOff;
+    Button btnOpen, btnClose;
 
+    enum ArdySignal {
+        Tyler(0, "tyler"),
+        Motor1Up(1, "Motor1Up"),
+        Motor1Down(2, "Motor1Down"),
+        Motor2Up(3, "Motor2Up"),
+        Motor2Down(4, "Motor2Down");
+
+        private java.lang.String name;
+        private java.lang.Integer id;
+
+        ArdySignal(Integer id, String name)
+        {
+            this.id = id;
+            this.name = name;
+        }
+
+        public Integer getId()
+        {
+            return id;
+        }
+
+        public byte[] getBytes()
+        {
+            byte[] test = id.toString().getBytes(StandardCharsets.UTF_8);
+            return id.toString().getBytes(StandardCharsets.UTF_8);
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,8 +68,8 @@ public class Controlling extends Activity {
 
         ActivityHelper.initialize(this);
         // mBtnDisconnect = (Button) findViewById(R.id.btnDisconnect);
-        btnOn=(Button)findViewById(R.id.on);
-        btnOff=(Button)findViewById(R.id.off);
+        btnOpen =(Button)findViewById(R.id.open);
+        btnClose =(Button)findViewById(R.id.close);
 
         Intent intent = getIntent();
         Bundle b = intent.getExtras();
@@ -58,28 +79,44 @@ public class Controlling extends Activity {
 
         Log.d(TAG, "Ready");
 
-        btnOn.setOnClickListener(new View.OnClickListener()
+        btnOpen.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View v) {
-                try {
-                    mBTSocket.getOutputStream().write(on.getBytes());
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                openController();
             }});
 
-        btnOff.setOnClickListener(new View.OnClickListener()
+        btnClose.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View v) {
-                try {
-                    mBTSocket.getOutputStream().write(off.getBytes());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                closeController();
             }});
+    }
+
+    protected void openController() {
+        sendArdyMessage(ArdySignal.Motor1Up.getBytes());
+
+        wait(30000);
+
+        sendArdyMessage(ArdySignal.Motor2Up.getBytes());
+    }
+
+    protected void closeController() {
+        sendArdyMessage(ArdySignal.Motor1Down.getBytes());
+
+        wait(30000);
+
+        sendArdyMessage(ArdySignal.Motor2Down.getBytes());
+    }
+
+    protected void sendArdyMessage(byte[] output)
+    {
+        try {
+            mBTSocket.getOutputStream().write(output);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private class ReadInput implements Runnable {
@@ -250,5 +287,17 @@ public class Controlling extends Activity {
     protected void onDestroy() {
         // TODO Auto-generated method stub
         super.onDestroy();
+    }
+
+    private static void wait(int ms)
+    {
+        try
+        {
+            Thread.sleep(ms);
+        }
+        catch (InterruptedException ex)
+        {
+            Thread.currentThread().interrupt();
+        }
     }
 }

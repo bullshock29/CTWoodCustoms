@@ -1,9 +1,11 @@
 package com.example.ctwoodcustoms;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
@@ -48,16 +50,15 @@ public class MainActivity extends Activity {
     public static final String BUFFER_SIZE = "com.example.ctwoodcustoms.buffersize";
     private static final String TAG = "BlueTest5-MainActivity";
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
-
         search = (Button) findViewById(R.id.search);
         connect = (Button) findViewById(R.id.connect);
+
+//        connect.setText(Controlling.ArdySignal.Motor1Up.getBytes().toString());
 
         listView = (ListView) findViewById(R.id.myList);
 
@@ -99,7 +100,15 @@ public class MainActivity extends Activity {
 
             @Override
             public void onClick(View arg0) {
+
                 BluetoothDevice device = ((MyAdapter) (listView.getAdapter())).getSelectedItem();
+
+                if (device == null)
+                {
+                    Toast.makeText(getApplicationContext(), "Select a paired bluetooth device.", Toast.LENGTH_LONG).show();
+                    return;
+                }
+
                 Intent intent = new Intent(getApplicationContext(), Controlling.class);
                 intent.putExtra(DEVICE_EXTRA, device);
                 intent.putExtra(DEVICE_UUID, mDeviceUUID.toString());
@@ -242,7 +251,14 @@ public class MainActivity extends Activity {
         }
 
         public BluetoothDevice getSelectedItem() {
-            return myList.get(selectedIndex);
+            if(myList.size() > 0)
+            {
+                return myList.get(selectedIndex);
+            }
+            else
+            {
+                return null;
+            }
         }
 
         @Override
