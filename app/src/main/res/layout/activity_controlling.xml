@@ -10,16 +10,48 @@
         android:id="@+id/open"
         android:layout_width="150dp"
         android:layout_height="100dp"
-        android:text="Open"
-        android:layout_marginTop="200dp"
-        android:layout_marginLeft="100dp"/>
+        android:text="Time to drink"
+        android:layout_marginTop="100dp"
+        android:layout_marginLeft="50dp"/>
 
     <Button
         android:id="@+id/close"
         android:layout_width="150dp"
         android:layout_height="100dp"
-        android:text="Close"
         android:layout_marginTop="200dp"
-        android:layout_marginLeft="100dp"/>
+        android:layout_marginLeft="50dp"
+        android:text="Goodnight" />
+
+    <Button
+        android:id="@+id/lidup"
+        android:layout_width="150dp"
+        android:layout_height="100dp"
+        android:layout_marginTop="100dp"
+        android:layout_marginLeft="210dp"
+        android:text="Lid Up" />
+
+    <Button
+        android:id="@+id/liddn"
+        android:layout_width="150dp"
+        android:layout_height="100dp"
+        android:layout_marginTop="200dp"
+        android:layout_marginLeft="210dp"
+        android:text="Lid Down" />
+
+    <Button
+        android:id="@+id/trayup"
+        android:layout_width="150dp"
+        android:layout_height="100dp"
+        android:layout_marginTop="300dp"
+        android:layout_marginLeft="210dp"
+        android:text="Tray Up" />
+
+    <Button
+        android:id="@+id/traydn"
+        android:layout_width="150dp"
+        android:layout_height="100dp"
+        android:layout_marginTop="400dp"
+        android:layout_marginLeft="210dp"
+        android:text="Tray Down" />
 
 </RelativeLayout>

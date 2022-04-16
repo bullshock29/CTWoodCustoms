@@ -1,16 +1,23 @@
 package com.example.ctwoodcustoms;
+
+import android.Manifest;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
+
+import androidx.core.app.ActivityCompat;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -27,11 +34,11 @@ public class Controlling extends Activity {
     private boolean mIsBluetoothConnected = false;
     private Button mBtnDisconnect;
     private BluetoothDevice mDevice;
-    final static String on="92";//on
-    final static String off="79";//off
+    final static String on = "92";//on
+    final static String off = "79";//off
 
     private ProgressDialog progressDialog;
-    Button btnOpen, btnClose;
+    Button btnOpen, btnClose, btnLidUp, btnLidDn, btnTrayUp, btnTrayDn;
 
     enum ArdySignal {
         Tyler(0, "tyler"),
@@ -43,20 +50,18 @@ public class Controlling extends Activity {
         private java.lang.String name;
         private java.lang.Integer id;
 
-        ArdySignal(Integer id, String name)
-        {
+        ArdySignal(Integer id, String name) {
             this.id = id;
             this.name = name;
         }
 
-        public Integer getId()
-        {
+        public Integer getId() {
             return id;
         }
 
-        public byte[] getBytes()
-        {
-            byte[] test = id.toString().getBytes(StandardCharsets.UTF_8);
+        public byte[] getBytes() {
+            byte[] test = id.toString().getBytes(StandardCharsets.US_ASCII);
+            byte[] test2 = id.toString().getBytes(StandardCharsets.UTF_8);
             return id.toString().getBytes(StandardCharsets.UTF_8);
         }
     }
@@ -68,8 +73,12 @@ public class Controlling extends Activity {
 
         ActivityHelper.initialize(this);
         // mBtnDisconnect = (Button) findViewById(R.id.btnDisconnect);
-        btnOpen =(Button)findViewById(R.id.open);
-        btnClose =(Button)findViewById(R.id.close);
+        btnOpen = (Button) findViewById(R.id.open);
+        btnClose = (Button) findViewById(R.id.close);
+        btnLidUp = (Button) findViewById(R.id.lidup);
+        btnLidDn = (Button) findViewById(R.id.liddn);
+        btnTrayUp = (Button) findViewById(R.id.trayup);
+        btnTrayDn = (Button) findViewById(R.id.traydn);
 
         Intent intent = getIntent();
         Bundle b = intent.getExtras();
@@ -79,19 +88,47 @@ public class Controlling extends Activity {
 
         Log.d(TAG, "Ready");
 
-        btnOpen.setOnClickListener(new View.OnClickListener()
-        {
+        btnOpen.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 openController();
-            }});
+            }
+        });
 
-        btnClose.setOnClickListener(new View.OnClickListener()
-        {
+        btnClose.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 closeController();
-            }});
+            }
+        });
+
+        btnLidUp.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sendArdyMessage(ArdySignal.Motor1Up.getBytes());
+            }
+        });
+
+        btnLidDn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sendArdyMessage(ArdySignal.Motor1Down.getBytes());
+            }
+        });
+
+        btnTrayUp.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sendArdyMessage(ArdySignal.Motor2Up.getBytes());
+            }
+        });
+
+        btnTrayDn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sendArdyMessage(ArdySignal.Motor2Down.getBytes());
+            }
+        });
     }
 
     protected void openController() {
@@ -110,8 +147,7 @@ public class Controlling extends Activity {
         sendArdyMessage(ArdySignal.Motor2Down.getBytes());
     }
 
-    protected void sendArdyMessage(byte[] output)
-    {
+    protected void sendArdyMessage(byte[] output) {
         try {
             mBTSocket.getOutputStream().write(output);
         } catch (IOException e) {
@@ -256,6 +292,17 @@ public class Controlling extends Activity {
 
             try {
                 if (mBTSocket == null || !mIsBluetoothConnected) {
+                    if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                        // TODO: Consider calling
+                        //    ActivityCompat#requestPermissions
+                        // here to request the missing permissions, and then overriding
+                        //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                        //                                          int[] grantResults)
+                        // to handle the case where the user grants the permission. See the documentation
+                        // for ActivityCompat#requestPermissions for more details.
+                        Toast.makeText(getApplicationContext(), "Could not select paired device.", Toast.LENGTH_LONG).show();
+                        return null;
+                    }
                     mBTSocket = mDevice.createInsecureRfcommSocketToServiceRecord(mDeviceUUID);
                     BluetoothAdapter.getDefaultAdapter().cancelDiscovery();
                     mBTSocket.connect();
