@@ -36,6 +36,7 @@ public class Controlling extends Activity {
     private BluetoothDevice mDevice;
     final static String on = "92";//on
     final static String off = "79";//off
+    public BluetoothHelper bluetoothHelper;
 
     private ProgressDialog progressDialog;
     Button btnOpen, btnClose, btnLidUp, btnLidDn, btnTrayUp, btnTrayDn;
@@ -60,8 +61,7 @@ public class Controlling extends Activity {
         }
 
         public byte[] getBytes() {
-            byte[] test = id.toString().getBytes(StandardCharsets.US_ASCII);
-            byte[] test2 = id.toString().getBytes(StandardCharsets.UTF_8);
+
             return id.toString().getBytes(StandardCharsets.UTF_8);
         }
     }
@@ -70,8 +70,6 @@ public class Controlling extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_controlling);
-
-
 
         ActivityHelper.initialize(this);
         // mBtnDisconnect = (Button) findViewById(R.id.btnDisconnect);
@@ -90,47 +88,10 @@ public class Controlling extends Activity {
 
         Log.d(TAG, "Ready");
 
-        btnOpen.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                openController();
-            }
-        });
+        bluetoothHelper = new BluetoothHelper(mDevice.getName(), mDevice.getAddress());
+        bluetoothHelper.Connect();
 
-        btnClose.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                closeController();
-            }
-        });
-
-        btnLidUp.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                sendArdyMessage(ArdySignal.Motor1Up.getBytes());
-            }
-        });
-
-        btnLidDn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                sendArdyMessage(ArdySignal.Motor1Down.getBytes());
-            }
-        });
-
-        btnTrayUp.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                sendArdyMessage(ArdySignal.Motor2Up.getBytes());
-            }
-        });
-
-        btnTrayDn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                sendArdyMessage(ArdySignal.Motor2Down.getBytes());
-            }
-        });
+        setListeners();
     }
 
     protected void openController() {
@@ -150,11 +111,11 @@ public class Controlling extends Activity {
     }
 
     protected void sendArdyMessage(byte[] output) {
-        try {
-            mBTSocket.getOutputStream().write(output);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        bluetoothHelper.SendMessage(output);
+    }
+
+    protected void sendArdyMessage(String output) {
+        bluetoothHelper.SendMessage(output);
     }
 
     private class ReadInput implements Runnable {
@@ -258,14 +219,14 @@ public class Controlling extends Activity {
         super.onPause();
     }
 
-    @Override
-    protected void onResume() {
-        if (mBTSocket == null || !mIsBluetoothConnected) {
-            new ConnectBT().execute();
-        }
-        Log.d(TAG, "Resumed");
-        super.onResume();
-    }
+//    @Override
+//    protected void onResume() {
+//        if (mBTSocket == null || !mIsBluetoothConnected) {
+//            new ConnectBT().execute();
+//        }
+//        Log.d(TAG, "Resumed");
+//        super.onResume();
+//    }
 
     @Override
     protected void onStop() {
@@ -279,59 +240,54 @@ public class Controlling extends Activity {
         super.onSaveInstanceState(outState);
     }
 
-    private class ConnectBT extends AsyncTask<Void, Void, Void> {
-        private boolean mConnectSuccessful = true;
-
-        @Override
-        protected void onPreExecute() {
-
-//            progressDialog = ProgressDialog.show(Controlling.this, "Hold on", "Connecting");// http://stackoverflow.com/a/11130220/1287554
-
-        }
-
-        @Override
-        protected Void doInBackground(Void... devices) {
-
-            try {
-                if (mBTSocket == null || !mIsBluetoothConnected) {
-                    if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                        // TODO: Consider calling
-                        //    ActivityCompat#requestPermissions
-                        // here to request the missing permissions, and then overriding
-                        //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                        //                                          int[] grantResults)
-                        // to handle the case where the user grants the permission. See the documentation
-                        // for ActivityCompat#requestPermissions for more details.
-                        Toast.makeText(getApplicationContext(), "Could not select paired device.", Toast.LENGTH_LONG).show();
-                        return null;
-                    }
-                    mBTSocket = mDevice.createInsecureRfcommSocketToServiceRecord(mDeviceUUID);
-                    BluetoothAdapter.getDefaultAdapter().cancelDiscovery();
-                    mBTSocket.connect();
-                }
-            } catch (IOException e) {
-                mConnectSuccessful = false;
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void result) {
-            super.onPostExecute(result);
-
-            if (!mConnectSuccessful) {
-                Toast.makeText(getApplicationContext(), "Could not connect to device.Please turn on your Hardware", Toast.LENGTH_LONG).show();
-                finish();
-            } else {
-                msg("Connected to device");
-                mIsBluetoothConnected = true;
-                mReadThread = new ReadInput(); // Kick off input reader
-            }
-
-            progressDialog.dismiss();
-        }
-
-    }
+//    private class ConnectBT extends AsyncTask<Void, Void, Void> {
+//        private boolean mConnectSuccessful = true;
+//
+//        @Override
+//        protected void onPreExecute() {
+//
+////            progressDialog = ProgressDialog.show(Controlling.this, "Hold on", "Connecting");// http://stackoverflow.com/a/11130220/1287554
+//
+//        }
+//
+//        @Override
+//        protected Void doInBackground(Void... devices) {
+//
+//            try {
+//                if (mBTSocket == null || !mIsBluetoothConnected) {
+//
+//                    if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+//                        Toast.makeText(getApplicationContext(), "Could not select paired device.", Toast.LENGTH_LONG).show();
+//                        return null;
+//                    }
+//
+//                    mBTSocket = mDevice.createInsecureRfcommSocketToServiceRecord(mDeviceUUID);
+//                    BluetoothAdapter.getDefaultAdapter().cancelDiscovery();
+//                    mBTSocket.connect();
+//                }
+//            } catch (IOException e) {
+//                mConnectSuccessful = false;
+//            }
+//            return null;
+//        }
+//
+//        @Override
+//        protected void onPostExecute(Void result) {
+//            super.onPostExecute(result);
+//
+//            if (!mConnectSuccessful) {
+//                Toast.makeText(getApplicationContext(), "Could not connect to device.Please turn on your Hardware", Toast.LENGTH_LONG).show();
+//                finish();
+//            } else {
+//                msg("Connected to device");
+//                mIsBluetoothConnected = true;
+//                mReadThread = new ReadInput(); // Kick off input reader
+//            }
+//
+//            progressDialog.dismiss();
+//        }
+//
+//    }
     @Override
     protected void onDestroy() {
         // TODO Auto-generated method stub
@@ -348,5 +304,50 @@ public class Controlling extends Activity {
         {
             Thread.currentThread().interrupt();
         }
+    }
+
+    private void setListeners() {
+
+        btnOpen.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openController();
+            }
+        });
+
+        btnClose.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                closeController();
+            }
+        });
+
+        btnLidUp.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sendArdyMessage(ArdySignal.Motor1Up.getBytes());
+            }
+        });
+
+        btnLidDn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sendArdyMessage(ArdySignal.Motor1Down.getBytes());
+            }
+        });
+
+        btnTrayUp.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sendArdyMessage(ArdySignal.Motor2Up.getBytes());
+            }
+        });
+
+        btnTrayDn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sendArdyMessage(ArdySignal.Motor2Down.getBytes());
+            }
+        });
     }
 }
