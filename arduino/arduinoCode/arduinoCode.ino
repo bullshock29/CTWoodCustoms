@@ -18,22 +18,26 @@ void loop() {
     Serial.print(Incoming_value);        //Print Value of Incoming_value in Serial monitor
     Serial.print("\n");        //New line 
     
-    if(Incoming_value == '49') 
+    if(Incoming_value == '49') {
       digitalWrite(6, HIGH); //ena
       digitalWrite(7, HIGH); //in1
       digitalWrite(8, LOW); //in2
-    else if(Incoming_value == '50')
+    }
+    else if(Incoming_value == '50') {
       digitalWrite(6, HIGH); //ena
       digitalWrite(7, LOW); //in1
       digitalWrite(8, HIGH); //in2
-    else if(Incoming_value == '51')
+    }
+    else if(Incoming_value == '51') {
       digitalWrite(11, HIGH); //ena
       digitalWrite(12, HIGH); //in1
       digitalWrite(13, LOW); //in2
-    else if(Incoming_value == '52')
+    }
+    else if(Incoming_value == '52') {
       digitalWrite(11, HIGH); //ena
       digitalWrite(12, LOW); //in1
       digitalWrite(13, HIGH); //in2
+    }
       
   } 
 

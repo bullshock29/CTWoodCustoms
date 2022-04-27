@@ -59,11 +59,13 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        checkBluetoothPermission();
+
         search = (Button) findViewById(R.id.search);
         connect = (Button) findViewById(R.id.connect);
 
-        String test = Controlling.ArdySignal.Motor1Up.getBytes().toString();
-        connect.setText(Controlling.ArdySignal.Motor1Up.getBytes().toString());
+//        String test = Controlling.ArdySignal.Motor1Up.getBytes().toString();
+//        connect.setText(Controlling.ArdySignal.Motor1Up.getBytes().toString());
 
         listView = (ListView) findViewById(R.id.myList);
 
@@ -216,7 +218,11 @@ public class MainActivity extends Activity {
 
         @Override
         protected List<BluetoothDevice> doInBackground(Void... params) {
+
+            int output = ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT);
+
             if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                int grantResults = 0;
                 // TODO: Consider calling
                 //    ActivityCompat#requestPermissions
                 // here to request the missing permissions, and then overriding
@@ -224,7 +230,8 @@ public class MainActivity extends Activity {
                 //                                          int[] grantResults)
                 // to handle the case where the user grants the permission. See the documentation
                 // for ActivityCompat#requestPermissions for more details.
-                return null;
+                ActivityCompat.requestPermissions(getParent(), new String[] {Manifest.permission.BLUETOOTH_CONNECT}, grantResults);
+//                return null;
             }
             Set<BluetoothDevice> pairedDevices = mBTAdapter.getBondedDevices();
             List<BluetoothDevice> listDevices = new ArrayList<BluetoothDevice>();
@@ -241,6 +248,7 @@ public class MainActivity extends Activity {
             if (listDevices!= null && listDevices.size() > 0) {
                 MyAdapter adapter = (MyAdapter) listView.getAdapter();
                 adapter.replaceItems(listDevices);
+                initList(listDevices);
             } else {
                 msg("No paired devices found, please pair your serial BT device and try again");
             }
@@ -363,5 +371,212 @@ public class MainActivity extends Activity {
                 break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    public static final int MY_PERMISSIONS_REQUEST_BT_CONNECT = 99;
+    public static final int MY_PERMISSIONS_REQUEST_BT_SCAN = 98;
+    public static final int MY_PERMISSIONS_REQUEST_BT = 97;
+
+    public boolean checkBluetoothPermission() {
+
+        boolean btConnResult = false;
+        boolean btResult = false;
+        boolean btScanResult = false;
+
+        //bt Connect
+        if (ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.BLUETOOTH_CONNECT)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.BLUETOOTH_CONNECT)) {
+
+                // Show an explanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+                new AlertDialog.Builder(this)
+                        .setTitle("Title")
+                        .setMessage("Message")
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                //Prompt the user once explanation has been shown
+                                ActivityCompat.requestPermissions(MainActivity.this,
+                                        new String[]{Manifest.permission.BLUETOOTH_CONNECT},
+                                        MY_PERMISSIONS_REQUEST_BT_CONNECT);
+                            }
+                        })
+                        .create()
+                        .show();
+
+
+            } else {
+                // No explanation needed, we can request the permission.
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.BLUETOOTH_CONNECT},
+                        MY_PERMISSIONS_REQUEST_BT_CONNECT);
+            }
+            btConnResult = false;
+        } else {
+            btConnResult = true;
+        }
+
+        //bt
+        if (ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.BLUETOOTH)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.BLUETOOTH)) {
+
+                // Show an explanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+                new AlertDialog.Builder(this)
+                        .setTitle("Title")
+                        .setMessage("Message")
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                //Prompt the user once explanation has been shown
+                                ActivityCompat.requestPermissions(MainActivity.this,
+                                        new String[]{Manifest.permission.BLUETOOTH},
+                                        MY_PERMISSIONS_REQUEST_BT);
+                            }
+                        })
+                        .create()
+                        .show();
+
+
+            } else {
+                // No explanation needed, we can request the permission.
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.BLUETOOTH},
+                        MY_PERMISSIONS_REQUEST_BT);
+            }
+            btResult = false;
+        } else {
+            btResult = true;
+        }
+
+        //bt scan
+        if (ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.BLUETOOTH_SCAN)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.BLUETOOTH_SCAN)) {
+
+                // Show an explanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+                new AlertDialog.Builder(this)
+                        .setTitle("Title")
+                        .setMessage("Message")
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                //Prompt the user once explanation has been shown
+                                ActivityCompat.requestPermissions(MainActivity.this,
+                                        new String[]{Manifest.permission.BLUETOOTH_SCAN},
+                                        MY_PERMISSIONS_REQUEST_BT_SCAN);
+                            }
+                        })
+                        .create()
+                        .show();
+
+
+            } else {
+                // No explanation needed, we can request the permission.
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.BLUETOOTH_SCAN},
+                        MY_PERMISSIONS_REQUEST_BT_SCAN);
+            }
+            btScanResult = false;
+        } else {
+            btScanResult = true;
+        }
+
+        return btConnResult && btResult && btScanResult;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_BT_CONNECT: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // permission was granted, yay! Do the
+                    // location-related task you need to do.
+                    if (ActivityCompat.checkSelfPermission(this,
+                            Manifest.permission.BLUETOOTH_CONNECT)
+                            == PackageManager.PERMISSION_GRANTED) {
+
+                        //Request location updates:
+//                        locationManager.requestLocationUpdates(provider, 400, 1, this);
+                    }
+
+                } else {
+
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+
+                }
+                return;
+            }
+            case MY_PERMISSIONS_REQUEST_BT_SCAN: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // permission was granted, yay! Do the
+                    // location-related task you need to do.
+                    if (ActivityCompat.checkSelfPermission(this,
+                            Manifest.permission.BLUETOOTH_SCAN)
+                            == PackageManager.PERMISSION_GRANTED) {
+
+                        //Request location updates:
+//                        locationManager.requestLocationUpdates(provider, 400, 1, this);
+                    }
+
+                } else {
+
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+
+                }
+                return;
+            }
+            case MY_PERMISSIONS_REQUEST_BT: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // permission was granted, yay! Do the
+                    // location-related task you need to do.
+                    if (ActivityCompat.checkSelfPermission(this,
+                            Manifest.permission.BLUETOOTH)
+                            == PackageManager.PERMISSION_GRANTED) {
+
+                        //Request location updates:
+//                        locationManager.requestLocationUpdates(provider, 400, 1, this);
+                    }
+
+                } else {
+
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+
+                }
+                return;
+            }
+
+        }
     }
 }

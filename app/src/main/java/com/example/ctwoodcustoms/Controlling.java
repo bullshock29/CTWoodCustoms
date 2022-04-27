@@ -71,6 +71,8 @@ public class Controlling extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_controlling);
 
+
+
         ActivityHelper.initialize(this);
         // mBtnDisconnect = (Button) findViewById(R.id.btnDisconnect);
         btnOpen = (Button) findViewById(R.id.open);
@@ -283,7 +285,7 @@ public class Controlling extends Activity {
         @Override
         protected void onPreExecute() {
 
-            progressDialog = ProgressDialog.show(Controlling.this, "Hold on", "Connecting");// http://stackoverflow.com/a/11130220/1287554
+//            progressDialog = ProgressDialog.show(Controlling.this, "Hold on", "Connecting");// http://stackoverflow.com/a/11130220/1287554
 
         }
 
