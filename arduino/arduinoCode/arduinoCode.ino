@@ -1,6 +1,8 @@
+#include <SoftwareSerial.h>
 char Incoming_value = 0; 
 void setup() {
   Serial.begin(9600);         //Sets the data rate in bits per second (baud) for serial data transmission
+  Serial.println("Hello World");
   pinMode(13, OUTPUT);
   pinMode(12, OUTPUT);
   pinMode(11, OUTPUT);
@@ -16,24 +18,25 @@ void loop() {
     Incoming_value = Serial.read();      //Read the incoming data and store it into variable Incoming_value
     
     Serial.print(Incoming_value);        //Print Value of Incoming_value in Serial monitor
+    Serial.print("Found Value");
     Serial.print("\n");        //New line 
     
-    if(Incoming_value == '49') {
+    if(Incoming_value == '1') {
       digitalWrite(6, HIGH); //ena
       digitalWrite(7, HIGH); //in1
       digitalWrite(8, LOW); //in2
     }
-    else if(Incoming_value == '50') {
+    else if(Incoming_value == '2') {
       digitalWrite(6, HIGH); //ena
       digitalWrite(7, LOW); //in1
       digitalWrite(8, HIGH); //in2
     }
-    else if(Incoming_value == '51') {
+    else if(Incoming_value == '3') {
       digitalWrite(11, HIGH); //ena
       digitalWrite(12, HIGH); //in1
       digitalWrite(13, LOW); //in2
     }
-    else if(Incoming_value == '52') {
+    else if(Incoming_value == '4') {
       digitalWrite(11, HIGH); //ena
       digitalWrite(12, LOW); //in1
       digitalWrite(13, HIGH); //in2

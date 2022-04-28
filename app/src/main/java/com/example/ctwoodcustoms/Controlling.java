@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -22,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 public class Controlling extends Activity {
@@ -37,13 +39,14 @@ public class Controlling extends Activity {
     final static String on = "92";//on
     final static String off = "79";//off
     public BluetoothHelper bluetoothHelper;
+    private Boolean isBusy = false;
 
     private ProgressDialog progressDialog;
     Button btnOpen, btnClose, btnLidUp, btnLidDn, btnTrayUp, btnTrayDn;
 
     enum ArdySignal {
         Tyler(0, "tyler"),
-        Motor1Up(1, "Motor1Up"),
+        Motor1Up(6, "Motor1Up"),
         Motor1Down(2, "Motor1Down"),
         Motor2Up(3, "Motor2Up"),
         Motor2Down(4, "Motor2Down");
@@ -88,26 +91,61 @@ public class Controlling extends Activity {
 
         Log.d(TAG, "Ready");
 
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
         bluetoothHelper = new BluetoothHelper(mDevice.getName(), mDevice.getAddress());
-        bluetoothHelper.Connect();
+
+        try {
+            bluetoothHelper.Connect();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
         setListeners();
     }
 
-    protected void openController() {
-        sendArdyMessage(ArdySignal.Motor1Up.getBytes());
+    protected Thread openController() {
+        Runnable runnable = () -> {
+            if (isBusy) {
+                System.out.println("busy in close controller");
+                return;
+            }
 
-        wait(30000);
+            isBusy = true;
 
-        sendArdyMessage(ArdySignal.Motor2Up.getBytes());
+            System.out.println("Motor1Up");
+            sendArdyMessage(ArdySignal.Motor1Up.getBytes());
+
+            wait(30000);
+
+            System.out.println("Motor2Up");
+            sendArdyMessage(ArdySignal.Motor2Up.getBytes());
+
+            isBusy = false;
+        };
+        return new Thread(runnable);
     }
 
-    protected void closeController() {
-        sendArdyMessage(ArdySignal.Motor1Down.getBytes());
+    protected Thread closeController() {
+        Runnable runnable = () -> {
+            if (isBusy) {
+                System.out.println("busy in close controller");
+                return;
+            }
 
-        wait(30000);
+            isBusy = true;
 
-        sendArdyMessage(ArdySignal.Motor2Down.getBytes());
+            System.out.println("Motor1Down");
+            sendArdyMessage(ArdySignal.Motor1Down.getBytes());
+
+            wait(30000);
+
+            System.out.println("Motor2Down");
+            sendArdyMessage(ArdySignal.Motor2Down.getBytes());
+            isBusy = false;
+        };
+        return new Thread(runnable);
     }
 
     protected void sendArdyMessage(byte[] output) {
@@ -311,14 +349,14 @@ public class Controlling extends Activity {
         btnOpen.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                openController();
+                openController().start();
             }
         });
 
         btnClose.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                closeController();
+                closeController().start();
             }
         });
 
